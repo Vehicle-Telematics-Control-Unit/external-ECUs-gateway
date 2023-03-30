@@ -19,7 +19,6 @@ RUN cd prog; \
     cmake ..; \
     make
 
-
 FROM alpine:3.17.2
 COPY --from=builder /usr/lib/libboost_system.so.1.58.0 /usr/lib
 COPY --from=builder /usr/lib/libstdc++.so.6 /usr/lib
