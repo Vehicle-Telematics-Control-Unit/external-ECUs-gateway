@@ -1,3 +1,0 @@
-/home/jok3r/application/build/CMakeFiles/diagnostic.dir
-/home/jok3r/application/build/CMakeFiles/edit_cache.dir
-/home/jok3r/application/build/CMakeFiles/rebuild_cache.dir
