@@ -1,0 +1,8 @@
+set(BUILD_LIB_NAME someipservice)
+cmake_minimum_required(VERSION 3.22)
+set(vsomeip_dir $ENV{VSOMEIP_DIR})
+find_package (vsomeip3 REQUIRED)
+find_package(Boost 1.58 COMPONENTS system thread log REQUIRED)
+include_directories(${Boost_INCLUDE_DIR} ${vsomeip_dir}/interface)
+add_library(${BUILD_LIB_NAME} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/ServiceManagerAdapter.cpp)
+target_link_libraries(${BUILD_LIB_NAME} vsomeip3 ${Boost_LIBRARIES})

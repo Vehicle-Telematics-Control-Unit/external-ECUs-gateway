@@ -1,0 +1,11 @@
+#ifndef __SERVICES_ID__
+#define __SERVICES_ID__
+
+#define SERVICE_ID 0x1234
+#define INSTANCE_ID 0x5678
+#define EVENTGROUP_ID 0x9C40
+#define DSRC_EVENT_ID 0x9C42
+#define DIAGNOSTIC_EVENT_ID 0x9C44
+#define PORT 5001
+
+#endif
