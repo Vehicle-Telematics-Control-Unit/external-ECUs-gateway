@@ -2,9 +2,9 @@ FROM boost_build:v0 as build
 
 LABEL description="Build vsomeip"
 
-COPY vSomeIP vSomeIP
+COPY vsomeip vsomeip
 
- RUN cd vSomeIP; \
+RUN cd vsomeip; \
      mkdir build; \
      cd build; \
      cmake .. ; \
