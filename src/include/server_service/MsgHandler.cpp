@@ -24,30 +24,35 @@ MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::s
 
 void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data)
 {
-    std::vector<uint8_t> msg;
+    using json = nlohmann::json;
+    json jsonMessage = {
+        {"route", "tests"},
+        {"code", ""},
+        {"state", ""},
+        {"description", ""},
+    };
+    jsonMessage["state"] = 
+        (stoi(data) == (uint8_t)DIAG_STATE::OKAY) ? "OKAY" : "FAULTY";
+
     switch (endpoint.port())
     {
     case SRC_PORTS::TYRES_PORT:
-        for (auto i : std::string("Tyres"))
-            msg.push_back(i);
+        jsonMessage["code"]= "C1234";
+        jsonMessage["description"]= "Tyre pressure";
         break;
     case SRC_PORTS::BATTERY_PORT:
-        for (auto i : std::string("Battery"))
-            msg.push_back(i);
+        jsonMessage["code"]= "P0562";
+        jsonMessage["description"]= "Main 12v battery";
+        break;
+    case SRC_PORTS::HEAD_LIGHT_PORT:
+        jsonMessage["code"]= "B2425";
+        jsonMessage["description"]= "Head lights";
         break;
     default:
-        for (auto i : std::string("Head Light"))
-            msg.push_back(i);
         break;
     }
-    // using json = nlohmann::json;
-    // json msg = {
-    //     {"route", "test"},
-    //     {"ObdCode", "B2425"},
-    //     {"Description", "fault in my ass"},
-    //     {"isGeneric", false}
-    // };
 
-    serviceManager->SendRequest(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, REQUEST_METHOD_ID, msg);
+    std::string message = jsonMessage.dump(4);
+    serviceManager->SendRequest(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, REQUEST_METHOD_ID, std::vector<uint8_t>(message.begin(), message.end()));
     std::cout << "request sent!!!\n";
 }
