@@ -1,19 +1,14 @@
 libvsomeip_srcs = [
    "implementation/endpoints/**/*.cpp",
-   "implementation/logger/**/*.cpp",
+   "implementation/logging/**/*.cpp",
    "implementation/tracing/**/*.cpp",
    "implementation/message/**/*.cpp",
    "implementation/routing/**/*.cpp",
    "implementation/runtime/**/*.cpp",
    "implementation/utility/**/*.cpp",
    "implementation/plugin/**/*.cpp",
-   "implementation/protocol/**/*.cpp",
    "implementation/security/**/*.cpp",
-]
-
-libvsomeip_compat_srcs = [
-    "implementation/compat/message/src/*.cpp",
-    "implementation/compat/runtime/src/*.cpp",
+   "implementation/logger/**/*.cpp",
 ]
 
 libvsomeip_cfg_srcs = [
@@ -30,9 +25,8 @@ libvsomeip_sd_srcs = [
 
 cc_defaults {
     name: "vsomeip_defaults",
-
     cppflags: [
-        "-std=c++14",
+        "-std=c++11",
         "-fexceptions",
         "-Wno-non-virtual-dtor",
         "-Wno-unused-const-variable",
@@ -45,25 +39,7 @@ cc_defaults {
         "-Wno-format",
         "-Wno-header-guard",
         "-Wno-overloaded-virtual",
-        "-Wno-implicit-fallthrough",
-        "-Wno-error",
-        "-Wno-shorten-64-to-32",
-        "-D_GTHREAD_USE_MUTEX_INIT_FUNC",
-        "-D_GTHREAD_USE_RECURSIVE_MUTEX_INIT_FUNC",
-    ]
-}
-
-cc_defaults {
-    name: "vsomeip_lib_defaults",
-    
-    cflags: [
-        "-DVSOMEIP_BOOST_VERSION=107100",
-        "-DVSOMEIP_INTERNAL_SUPPRESS_DEPRECATED",
-    ],
-
-    local_include_dirs: [
-        "interface",
-        "implementation/helper"
+        "-Wno-implicit-fallthrough"
     ]
 }
 
@@ -74,26 +50,22 @@ cc_library_shared {
     srcs: libvsomeip_srcs,
 
     defaults: [
-        "vsomeip_defaults",
-        "vsomeip_lib_defaults"
+        "vsomeip_defaults"
     ],
 
     cflags: [
-        "-DWITHOUT_SYSTEMD",
-        "-DVSOMEIP_COMPAT_VERSION=\"3.3.0\"",
-        "-DVSOMEIP_BASE_PATH=\"/vendor/run/someip/\"",
-        "-DUSE_DLT",
-    ],
-
-    ldflags: [
-        "-Wl,-wrap,socket",
-        "-Wl,-wrap,accept"
+        "-DWITHOUT_SYSTEMD"
     ],
 
     rtti: true,
 
+    local_include_dirs: [
+        "interface",
+        "implementation/helper/1.70"
+    ],
+
     export_include_dirs: [
-        "interface"
+	"interface"
     ],
 
     shared_libs: [
@@ -106,17 +78,21 @@ cc_library_shared {
 }
 
 cc_library_shared {
-    name: "libvsomeip_cfg",
+    name: "libvsomeip3-cfg",
     vendor: true,
 
     srcs: libvsomeip_cfg_srcs,
 
     defaults: [
-        "vsomeip_defaults",
-        "vsomeip_lib_defaults"
+        "vsomeip_defaults"
     ],
 
     rtti: true,
+
+    local_include_dirs: [
+        "interface",
+        "implementation/helper/1.70"
+    ],
 
     shared_libs: [
         "libvsomeip3",
@@ -126,17 +102,21 @@ cc_library_shared {
 }
 
 cc_library_shared {
-    name: "libvsomeip_e2e",
+    name: "libvsomeip3-e2e",
     vendor: true,
 
     srcs: libvsomeip_e2e_srcs,
 
     defaults: [
-        "vsomeip_defaults",
-        "vsomeip_lib_defaults"
+        "vsomeip_defaults"
     ],
 
     rtti: true,
+
+    local_include_dirs: [
+        "interface",
+        "implementation/helper/1.70"
+    ],
 
     shared_libs: [
        "libvsomeip3"
@@ -144,43 +124,24 @@ cc_library_shared {
 }
 
 cc_library_shared {
-    name: "libvsomeip_sd",
+    name: "libvsomeip3-sd",
     vendor: true,
 
     srcs: libvsomeip_sd_srcs,
 
     defaults: [
-        "vsomeip_defaults",
-        "vsomeip_lib_defaults"
+        "vsomeip_defaults"
     ],
 
     rtti: true,
 
-    shared_libs: [
-        "libvsomeip3",
-        "libboost_system"
-    ]
-}
-
-cc_library_shared {
-    name: "libvsomeip",
-    vendor: true,
-
-    srcs: libvsomeip_compat_srcs,
-
-    defaults: [
-        "vsomeip_defaults",
-        "vsomeip_lib_defaults"
-    ],
-
-    rtti: true,
-
-    export_include_dirs: [
-        "interface"
+    local_include_dirs: [
+        "interface",
+        "implementation/helper/1.70"
     ],
 
     shared_libs: [
         "libvsomeip3",
-        "libboost_system"
+        "libboost_thread"
     ]
 }

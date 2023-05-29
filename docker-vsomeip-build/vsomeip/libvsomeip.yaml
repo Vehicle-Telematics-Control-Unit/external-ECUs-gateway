@@ -1,6 +1,0 @@
-- name: libvsomeip
-  version: 3.3.0
-  vendor: Lynx Team
-  license:
-    concluded: CLOSED and MPLv2
-    declared: MPLv2
