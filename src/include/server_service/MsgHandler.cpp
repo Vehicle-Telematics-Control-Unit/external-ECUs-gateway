@@ -1,4 +1,6 @@
 #include "MsgHandler.hpp"
+#include <json.hpp>
+
 
 MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::shared_ptr<std::vector<uint16_t>> events)
     : serviceManager{servManger},
@@ -6,49 +8,46 @@ MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::s
 {
 }
 
-void MsgHandler::Serialize()
-{
-    if (msgHandlerEvents->front() == currentEvent)
-    {
-        serializedMsg.resize(sizeof(msg_DSRC));
-        memcpy(serializedMsg.data(), &msgDRC, sizeof(msg_DSRC));
-    }
-    else
-    {
-        serializedMsg.resize(sizeof(msg_diagnostic));
-        memcpy(serializedMsg.data(), &msgDiagnostic, sizeof(msg_diagnostic));
-    }
-}
+// void MsgHandler::Serialize()
+// {
+//     if (msgHandlerEvents->front() == currentEvent)
+//     {
+//         serializedMsg.resize(sizeof(msg_DSRC));
+//         memcpy(serializedMsg.data(), &msgDRC, sizeof(msg_DSRC));
+//     }
+//     else
+//     {
+//         serializedMsg.resize(sizeof(msg_diagnostic));
+//         memcpy(serializedMsg.data(), &msgDiagnostic, sizeof(msg_diagnostic));
+//     }
+// }
 
 void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data)
 {
+    std::vector<uint8_t> msg;
     switch (endpoint.port())
     {
-    case SRC_PORTS::HEADING_PORT:
-        msgDRC.heading = stoi(data);
-        currentEvent = msgHandlerEvents->front();
-        break;
-    case SRC_PORTS::SPEED_PORT:
-        msgDRC.speed = stoi(data);
-        currentEvent = msgHandlerEvents->front();
-        break;
     case SRC_PORTS::TYRES_PORT:
-        msgDiagnostic.tyres = (TYRES)stoi(data);
-        currentEvent = msgHandlerEvents->back();
+        for (auto i : std::string("Tyres"))
+            msg.push_back(i);
         break;
     case SRC_PORTS::BATTERY_PORT:
-        msgDiagnostic.battery = (BATTERY)stoi(data);
-        currentEvent = msgHandlerEvents->back();
-        break;
-    case SRC_PORTS::HEAD_LIGHT_PORT:
-        msgDiagnostic.headLight = (HEAD_LIGHT)stoi(data);
-        currentEvent = msgHandlerEvents->back();
+        for (auto i : std::string("Battery"))
+            msg.push_back(i);
         break;
     default:
-        msgDiagnostic.oilLevel = (OIL_LEVEL)stoi(data);
-        currentEvent = msgHandlerEvents->back();
+        for (auto i : std::string("Head Light"))
+            msg.push_back(i);
+        break;
     }
-    Serialize();
-    serviceManager->updateEvent(currentEvent, serializedMsg);
-    std::cout << "updated event\n";
+    // using json = nlohmann::json;
+    // json msg = {
+    //     {"route", "test"},
+    //     {"ObdCode", "B2425"},
+    //     {"Description", "fault in my ass"},
+    //     {"isGeneric", false}
+    // };
+
+    serviceManager->SendRequest(SERVICE_ID, INSTANCE_ID, METHOD_ID, msg);
+    std::cout << "request sent!!!\n";
 }

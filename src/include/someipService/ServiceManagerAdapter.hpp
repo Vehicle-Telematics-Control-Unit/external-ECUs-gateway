@@ -14,6 +14,17 @@
 class ServiceManagerAdapter
 {
 public:
+    typedef struct
+    {
+        /* data */
+        uint16_t method_id;
+        std::function<void(const std::shared_ptr<vsomeip::message> &)> callback;
+    } METHOD;
+
+// private:
+//     void on_availability(vsomeip::service_t _service, vsomeip::instance_t _instance, bool _is_available);
+
+public:
     ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const std::string &name);
     ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &event_group_id, const std::string &name);
     void start();
@@ -25,6 +36,8 @@ public:
     void offer();
     void offerEvents();
     void sendResponse(const std::vector<uint8_t> &payload, const std::shared_ptr<vsomeip::message> &_message);
+    void requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods);
+    void SendRequest(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &method_id, const std::vector<uint8_t> &payload);
 
 private:
     typedef struct
@@ -33,13 +46,6 @@ private:
         std::vector<uint8_t> payload;
         bool active;
     } EVENT;
-
-    typedef struct
-    {
-        /* data */
-        uint16_t method_id;
-        std::function<void(const std::shared_ptr<vsomeip::message> &)> callback;
-    } METHOD;
 
     std::shared_ptr<vsomeip::application> m_app_;
     std::mutex m_mutex_;

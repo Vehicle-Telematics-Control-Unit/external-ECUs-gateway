@@ -18,3 +18,4 @@ COPY --from=builder /usr/lib/libboost_thread.so.1.58.0 /usr/lib
 COPY --from=builder /usr/lib/libboost_system.so.1.58.0 /usr/lib
 COPY --from=builder /usr/lib/libgcc_s.so.1 /usr/lib
 COPY --from=builder /usr/lib/libboost_filesystem.so.1.58.0 /usr/lib
+COPY vsomeip.json /etc/vsomeip

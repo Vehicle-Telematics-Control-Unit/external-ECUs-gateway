@@ -37,20 +37,20 @@ typedef enum
     OIL_LEVEL_PORT
 } SRC_PORTS;
 
-typedef struct
-{
-    /* data */
-    uint16_t heading; // port 6000
-    uint8_t speed;    // port 6001
-} msg_DSRC;
+// typedef struct
+// {
+//     /* data */
+//     uint16_t heading; // port 6000
+//     uint8_t speed;    // port 6001
+// } msg_DSRC;
 
-typedef struct
-{
-    /* data */
-    TYRES tyres;          // port 6002
-    BATTERY battery;      // port 6003
-    HEAD_LIGHT headLight; // port 6004
-    OIL_LEVEL oilLevel;   // port 6005
-} msg_diagnostic;
+// typedef struct
+// {
+//     /* data */
+//     TYRES tyres;          // port 6002
+//     BATTERY battery;      // port 6003
+//     HEAD_LIGHT headLight; // port 6004
+//     OIL_LEVEL oilLevel;   // port 6005
+// } msg_diagnostic;
 
 #endif

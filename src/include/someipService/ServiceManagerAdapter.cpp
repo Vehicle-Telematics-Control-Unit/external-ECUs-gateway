@@ -73,6 +73,38 @@ void ServiceManagerAdapter::addMethod(const uint16_t &method, const std::functio
     methods.push_back({method, callback});
 }
 
+void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods)
+{
+    m_app_->register_availability_handler(service_id, instance_id, [this](vsomeip::service_t _service, vsomeip::instance_t _instance, bool _is_available)
+                                          {
+        std::cout << "CLIENT: Service ["
+                << std::hex << _service << "." << _instance
+                << "] is "
+                << (_is_available ? "available." : "NOT available.")
+                << std::endl;
+        m_condition_.notify_one(); });
+    m_app_->request_service(service_id, instance_id);
+    for (auto method : methods)
+        m_app_->register_message_handler(service_id, instance_id, method.method_id, method.callback);
+    std::cout << "checking for service!!!\n";
+    // std::unique_lock<std::mutex> its_lock(m_mutex_);
+    // m_condition_.wait(its_lock);
+}
+
+void ServiceManagerAdapter::SendRequest(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &method_id, const std::vector<uint8_t> &payload)
+{
+    std::shared_ptr<vsomeip::message> request;
+    request = vsomeip::runtime::get()->create_request();
+    request->set_service(service_id);
+    request->set_instance(instance_id);
+    request->set_method(method_id);
+
+    std::shared_ptr<vsomeip::payload> its_payload = vsomeip::runtime::get()->create_payload();
+    its_payload->set_data(payload);
+    request->set_payload(its_payload);
+    m_app_->send(request);
+}
+
 void ServiceManagerAdapter::registerMethods()
 {
     for (auto method : methods)
