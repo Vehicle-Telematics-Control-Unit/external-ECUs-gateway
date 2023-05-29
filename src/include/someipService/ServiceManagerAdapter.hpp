@@ -37,7 +37,7 @@ public:
     void offerEvents();
     void sendResponse(const std::vector<uint8_t> &payload, const std::shared_ptr<vsomeip::message> &_message);
     void requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods);
-    void SendRequest(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &method_id, const std::vector<uint8_t> &payload);
+    void SendRequest(uint16_t service_id, uint16_t instance_id, uint16_t method_id, const std::vector<uint8_t> &payload);
 
 private:
     typedef struct

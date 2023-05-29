@@ -91,7 +91,7 @@ void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &se
     // m_condition_.wait(its_lock);
 }
 
-void ServiceManagerAdapter::SendRequest(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &method_id, const std::vector<uint8_t> &payload)
+void ServiceManagerAdapter::SendRequest(uint16_t service_id, uint16_t instance_id, uint16_t method_id, const std::vector<uint8_t> &payload)
 {
     std::shared_ptr<vsomeip::message> request;
     request = vsomeip::runtime::get()->create_request();
