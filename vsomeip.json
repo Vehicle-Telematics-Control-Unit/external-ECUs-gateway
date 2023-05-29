@@ -3,11 +3,11 @@
     "applications" : 
     [
         {
-            "name" : "Hello",
+            "name" : "UDP_Service",
             "id" : "0x1313"
         } 
     ],
-    "routing" : "Hello",
+    "routing" : "UDP_Service",
     "service-discovery" :
     {
         "enable" : "true",

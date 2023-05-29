@@ -48,6 +48,6 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
     //     {"isGeneric", false}
     // };
 
-    serviceManager->SendRequest(SERVICE_ID, INSTANCE_ID, METHOD_ID, msg);
+    serviceManager->SendRequest(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, REQUEST_METHOD_ID, msg);
     std::cout << "request sent!!!\n";
 }
