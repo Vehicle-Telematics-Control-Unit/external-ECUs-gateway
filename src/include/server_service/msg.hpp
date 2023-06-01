@@ -9,20 +9,26 @@ enum class DIAG_STATE : uint8_t
     OKAY = 1
 };
 
-typedef enum
+enum class MSG_TYPE : uint8_t
 {
-    OIL_LEVEL_OKAY = 0,
-    OIL_LEVEL_LOW
-} OIL_LEVEL;
+    DSRC = 0,
+    DIAGNOSTIC = 1
+};
 
-typedef enum
+// typedef enum
+// {
+//     OIL_LEVEL_OKAY = 0,
+//     OIL_LEVEL_LOW
+// } OIL_LEVEL;
+
+enum class SRC_PORTS : uint16_t
 {
-    HEADING_PORT = 6000,
-    SPEED_PORT,
+    SPEED_PORT = 6000,
+    HEADING_PORT,
     TYRES_PORT,
     BATTERY_PORT,
     HEAD_LIGHT_PORT,
     OIL_LEVEL_PORT
-} SRC_PORTS;
+};
 
 #endif

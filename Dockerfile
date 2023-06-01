@@ -1,4 +1,4 @@
-FROM vsomeip-alpine as builder
+FROM vsomeip_build:v0 as builder
 
 COPY src src
 

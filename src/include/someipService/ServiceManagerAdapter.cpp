@@ -3,14 +3,14 @@
 ServiceManagerAdapter::ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const std::string &name)
     : m_service_id(service_id),
       m_instance_id(instance_id),
-      m_app_(vsomeip::runtime::get()->create_application(std::move(name)))
+      m_app_(vsomeip::runtime::get()->create_application(name))
 {
 }
 
 ServiceManagerAdapter::ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &event_group_id, const std::string &name)
     : m_service_id(service_id),
       m_instance_id(instance_id),
-      m_app_(vsomeip::runtime::get()->create_application(std::move(name)))
+      m_app_(vsomeip::runtime::get()->create_application(name))
 {
     its_groups.insert(event_group_id);
 }
@@ -40,7 +40,7 @@ void ServiceManagerAdapter::addEvent(const uint16_t &event)
     m_events[event];
 }
 
-void ServiceManagerAdapter::updateEvent(const uint16_t &event, std::vector<uint8_t> &payload)
+void ServiceManagerAdapter::updateEvent(const uint16_t &event, const std::vector<uint8_t> &payload)
 {
     std::unique_lock<std::mutex> its_lock(m_mutex_);
     m_events[event].payload = std::move(payload);
@@ -75,20 +75,27 @@ void ServiceManagerAdapter::addMethod(const uint16_t &method, const std::functio
 
 void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods)
 {
+    serviceAvailable[service_id + instance_id] = false;
     m_app_->register_availability_handler(service_id, instance_id, [this](vsomeip::service_t _service, vsomeip::instance_t _instance, bool _is_available)
                                           {
-        std::cout << "CLIENT: Service ["
-                << std::hex << _service << "." << _instance
-                << "] is "
-                << (_is_available ? "available." : "NOT available.")
-                << std::endl;
-        m_condition_.notify_one(); });
+                                              std::cout << "CLIENT: Service ["
+                                                        << std::hex << _service << "." << _instance
+                                                        << "] is "
+                                                        << (_is_available ? "available." : "NOT available.")
+                                                        << std::endl;
+                                              serviceAvailable[_service + _instance] = true;
+                                              m_condition_.notify_one(); });
     m_app_->request_service(service_id, instance_id);
     for (auto method : methods)
         m_app_->register_message_handler(service_id, instance_id, method.method_id, method.callback);
     std::cout << "checking for service!!!\n";
-    // std::unique_lock<std::mutex> its_lock(m_mutex_);
-    // m_condition_.wait(its_lock);
+}
+
+void ServiceManagerAdapter::waitForServiceToBeAvailable(const uint16_t service_id, const uint16_t instance_id)
+{
+    std::unique_lock<std::mutex> its_lock(m_mutex_);
+    while (!serviceAvailable[service_id + instance_id])
+        m_condition_.wait(its_lock);
 }
 
 void ServiceManagerAdapter::SendRequest(uint16_t service_id, uint16_t instance_id, uint16_t method_id, const std::vector<uint8_t> &payload)
