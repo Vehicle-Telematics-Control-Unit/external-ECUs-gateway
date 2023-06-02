@@ -5,8 +5,9 @@ LABEL description="Build vsomeip"
 COPY vsomeip vsomeip
 
 RUN cd vsomeip; \
+     rm -rf build; \
      mkdir build; \
      cd build; \
      cmake .. ; \
-     make; \
+     make -j $(echo $(nproc --all) | grep -o '[0-9]*');\
      make install;

@@ -3,6 +3,7 @@ FROM vsomeip_build:v0 as builder
 COPY src src
 
 RUN cd src; \
+    rm -rf build; \
     mkdir build; \
     cd build; \
     cmake ..; \

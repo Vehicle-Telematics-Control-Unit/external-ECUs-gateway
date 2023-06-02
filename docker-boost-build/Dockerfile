@@ -10,4 +10,4 @@ RUN tar -xf boost_1_58_0.tar.gz
 RUN cd boost_1_58_0/; \
     ./bootstrap.sh --prefix=/usr/; 
 
-RUN cd boost_1_58_0/; ./b2 install; exit 0
+RUN cd boost_1_58_0/; ./b2 install -j $(echo $(nproc --all) | grep -o '[0-9]*') ; exit 0
