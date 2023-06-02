@@ -30,8 +30,8 @@ public:
     void start();
     bool init();
     void addEvent(const uint16_t &event);
-    void addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback);
-    void registerMethods();
+    // void addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback);
+    // void registerMethods();
     void updateEvent(const uint16_t &event, const std::vector<uint8_t> &payload);
     void offer();
     void offerEvents();
@@ -39,6 +39,7 @@ public:
     void requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods);
     void SendRequest(uint16_t service_id, uint16_t instance_id, uint16_t method_id, const std::vector<uint8_t> &payload);
     void waitForServiceToBeAvailable(const uint16_t service_id, const uint16_t instance_id);
+    void subOnEvent(const uint16_t service_id, const uint16_t instance_id, const uint16_t event_id);
 
 private:
     typedef struct
