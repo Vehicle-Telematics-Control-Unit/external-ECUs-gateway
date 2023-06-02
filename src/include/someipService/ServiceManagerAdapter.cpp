@@ -68,10 +68,10 @@ void ServiceManagerAdapter::offerEvents()
     }
 }
 
-void ServiceManagerAdapter::addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback)
-{
-    methods.push_back({method, callback});
-}
+// void ServiceManagerAdapter::addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback)
+// {
+//     methods.push_back({method, callback});
+// }
 
 void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods)
 {
@@ -98,6 +98,13 @@ void ServiceManagerAdapter::waitForServiceToBeAvailable(const uint16_t service_i
         m_condition_.wait(its_lock);
 }
 
+void ServiceManagerAdapter::subOnEvent(const uint16_t service_id, const uint16_t instance_id, const uint16_t event_id)
+{
+    waitForServiceToBeAvailable(service_id, instance_id);
+    m_app_->request_event(service_id, instance_id, event_id, its_groups);
+    m_app_->subscribe(service_id, instance_id, *its_groups.begin());
+}
+
 void ServiceManagerAdapter::SendRequest(uint16_t service_id, uint16_t instance_id, uint16_t method_id, const std::vector<uint8_t> &payload)
 {
     std::shared_ptr<vsomeip::message> request;
@@ -112,11 +119,11 @@ void ServiceManagerAdapter::SendRequest(uint16_t service_id, uint16_t instance_i
     m_app_->send(request);
 }
 
-void ServiceManagerAdapter::registerMethods()
-{
-    for (auto method : methods)
-        m_app_->register_message_handler(m_service_id, m_instance_id, method.method_id, method.callback);
-}
+// void ServiceManagerAdapter::registerMethods()
+// {
+//     for (auto method : methods)
+//         m_app_->register_message_handler(m_service_id, m_instance_id, method.method_id, method.callback);
+// }
 
 void ServiceManagerAdapter::sendResponse(const std::vector<uint8_t> &payload, const std::shared_ptr<vsomeip::message> &_message)
 {
