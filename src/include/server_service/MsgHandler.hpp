@@ -21,7 +21,7 @@ private:
 
 public:
     MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::shared_ptr<std::vector<uint16_t>> events);
-    void HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data, const std::size_t size);
+    void HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data);
 
     // private:
     //     void Serialize();

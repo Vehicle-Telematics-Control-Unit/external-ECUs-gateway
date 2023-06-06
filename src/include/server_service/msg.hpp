@@ -5,8 +5,8 @@
 
 enum class DIAG_STATE : uint8_t
 {
-    FAULTY = 0,
-    OKAY = 1
+    OKAY = 0,
+    FAULTY = 1
 };
 
 enum class MSG_TYPE : uint8_t

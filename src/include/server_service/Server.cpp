@@ -38,10 +38,12 @@ void Server::StartRecieve()
                               {
                                   if (!ec)
                                   {
+                                      std::string newStr(data.data(), recvd);
                                       std::cout << "[" << sender_endpoint << "]: ";
-                                      for (int i = 0; i < recvd; i++)
-                                          std::cout << data[i];
-                                      msgHandler.HandleMsg(sender_endpoint, data, recvd);
+                                      //   for (int i = 0; i < recvd; i++)
+                                      //       std::cout << data[i];
+                                      std::cout << newStr << '\n';
+                                      msgHandler.HandleMsg(sender_endpoint, newStr);
                                   }
                                   StartRecieve();
                               });

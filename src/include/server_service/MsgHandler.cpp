@@ -7,7 +7,7 @@ MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::s
 {
 }
 
-void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data, const std::size_t size)
+void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const std::string &data)
 {
     using json = nlohmann::json;
     json jsonMessage = {
@@ -53,14 +53,12 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
         std::string message = jsonMessage.dump(4);
         serviceManager->waitForServiceToBeAvailable(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID);
         serviceManager->SendRequest(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, REQUEST_METHOD_ID, std::vector<uint8_t>(message.begin(), message.end()));
+        std::cout << "request sent!!!\n";
     }
     else
     {
         std::cout << "updated event!!!\n";
-        std::vector<uint8_t> temp(size);
-        for (int i = 0; i < size; i++)
-            temp[i] = data[i];
-        serviceManager->updateEvent(currentEvent, temp);
+        std::vector<uint8_t> dataToBeSent(data.begin(), data.end());
+        serviceManager->updateEvent(currentEvent, dataToBeSent);
     }
-    std::cout << "request sent!!!\n";
 }
