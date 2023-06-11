@@ -8,3 +8,4 @@ Description: New SOME/IP stack, feature complete
 Version: @VSOMEIP_VERSION@
 Libs: -L${libdir} -lvsomeip3
 Cflags: -I${includedir}
+

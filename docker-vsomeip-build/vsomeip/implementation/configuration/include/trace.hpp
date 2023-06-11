@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -11,7 +11,6 @@
 
 #include <vsomeip/primitive_types.hpp>
 #include <vsomeip/trace.hpp>
-#include "../../tracing/include/enumeration_types.hpp"
 
 namespace vsomeip_v3 {
 namespace cfg {
@@ -23,12 +22,12 @@ struct trace_channel {
 
 struct trace_filter {
     trace_filter()
-        : ftype_(vsomeip_v3::trace::filter_type_e::POSITIVE),
+        : is_positive_(true),
           is_range_(false) {
     }
 
     std::vector<trace_channel_t> channels_;
-    vsomeip_v3::trace::filter_type_e ftype_;
+    bool is_positive_;
     bool is_range_;
     std::vector<vsomeip_v3::trace::match_t> matches_;
 };

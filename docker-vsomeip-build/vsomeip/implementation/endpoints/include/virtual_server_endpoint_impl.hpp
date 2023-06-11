@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -6,12 +6,7 @@
 #ifndef VSOMEIP_V3_VIRTUAL_SERVER_ENDPOINT_IMPL_HPP_
 #define VSOMEIP_V3_VIRTUAL_SERVER_ENDPOINT_IMPL_HPP_
 
-#if VSOMEIP_BOOST_VERSION < 106600
-#	include <boost/asio/io_service.hpp>
-#	define io_context io_service
-#else
-#	include <boost/asio/io_context.hpp>
-#endif
+#include <boost/asio/io_service.hpp>
 
 #include <vsomeip/primitive_types.hpp>
 
@@ -25,12 +20,12 @@ public:
             const std::string &_address,
             uint16_t _port,
             bool _reliable,
-            boost::asio::io_context &_io);
+            boost::asio::io_service& _service);
 
     virtual ~virtual_server_endpoint_impl();
 
     void start();
-    void prepare_stop(const endpoint::prepare_stop_handler_t &_handler,
+    void prepare_stop(endpoint::prepare_stop_handler_t _handler,
                       service_t _service);
     void stop();
 
@@ -40,6 +35,8 @@ public:
     void set_connected(bool _connected);
 
     bool send(const byte_t *_data, uint32_t _size);
+    bool send(const std::vector<byte_t>& _cmd_header, const byte_t *_data,
+              uint32_t _size);
     bool send_to(const std::shared_ptr<endpoint_definition> _target,
             const byte_t *_data, uint32_t _size);
     bool send_error(const std::shared_ptr<endpoint_definition> _target,
@@ -53,7 +50,6 @@ public:
 
     bool get_remote_address(boost::asio::ip::address &_address) const;
     std::uint16_t get_local_port() const;
-    void set_local_port(uint16_t _port);
     std::uint16_t get_remote_port() const;
     bool is_reliable() const;
     bool is_local() const;
@@ -64,7 +60,7 @@ public:
 
     void restart(bool _force);
 
-    void register_error_handler(const error_handler_t &_handler);
+    void register_error_handler(error_handler_t _handler);
     void print_status();
 
     size_t get_queue_size() const;
@@ -75,7 +71,7 @@ private:
     bool reliable_;
 
     uint32_t use_count_;
-    boost::asio::io_context &io_;
+    boost::asio::io_service& service_;
 };
 
 } // namespace vsomeip_v3

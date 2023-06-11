@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2018 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -44,7 +44,11 @@ class serviceentry_impl;
 class service_discovery_host;
 class subscription;
 
-using requests_t = std::map<service_t, std::map<instance_t, std::shared_ptr<request>>>;
+typedef std::map<service_t,
+            std::map<instance_t,
+                std::shared_ptr<request>
+            >
+        > requests_t;
 
 struct entry_data_t {
     std::shared_ptr<entry_impl> entry_;
@@ -59,7 +63,7 @@ public:
                            const std::shared_ptr<configuration>& _configuration);
     virtual ~service_discovery_impl();
 
-    boost::asio::io_context &get_io();
+    boost::asio::io_service & get_io();
 
     void init();
     void start();
@@ -75,22 +79,20 @@ public:
     void unsubscribe(service_t _service, instance_t _instance,
             eventgroup_t _eventgroup, client_t _client);
     void unsubscribe_all(service_t _service, instance_t _instance);
-    void unsubscribe_all_on_suspend();
-    void remove_subscriptions(service_t _service, instance_t _instance);
+    void reset_subscriptions(service_t _service, instance_t _instance);
 
     bool send(bool _is_announcing);
 
     void on_message(const byte_t *_data, length_t _length,
             const boost::asio::ip::address &_sender,
-            bool _is_multicast);
+            const boost::asio::ip::address &_destination);
 
     void on_endpoint_connected(
             service_t _service, instance_t _instance,
             const std::shared_ptr<endpoint> &_endpoint);
 
     void offer_service(const std::shared_ptr<serviceinfo> &_info);
-    bool stop_offer_service(const std::shared_ptr<serviceinfo> &_info, bool _send);
-    bool send_collected_stop_offers(const std::vector<std::shared_ptr<serviceinfo>> &_infos);
+    void stop_offer_service(const std::shared_ptr<serviceinfo> &_info);
 
     void set_diagnosis_mode(const bool _activate);
 
@@ -100,19 +102,16 @@ public:
     void update_remote_subscription(
             const std::shared_ptr<remote_subscription> &_subscription);
 
-    void register_sd_acceptance_handler(const sd_acceptance_handler_t &_handler);
+    void register_sd_acceptance_handler(sd_acceptance_handler_t _handler);
     void register_reboot_notification_handler(
-             const reboot_notification_handler_t &_handler);
+            reboot_notification_handler_t _handler);
 private:
     std::pair<session_t, bool> get_session(const boost::asio::ip::address &_address);
     void increment_session(const boost::asio::ip::address &_address);
 
     bool is_reboot(const boost::asio::ip::address &_sender,
-            bool _is_multicast, bool _reboot_flag, session_t _session);
-
-    bool check_session_id_sequence(const boost::asio::ip::address &_sender,
-                const bool _is_multicast, const session_t &_session,
-                session_t &_missing_session);
+            const boost::asio::ip::address &_destination,
+            bool _reboot_flag, session_t _session);
 
     void insert_find_entries(std::vector<std::shared_ptr<message_impl> > &_messages,
                              const requests_t &_requests);
@@ -120,6 +119,12 @@ private:
                               const services_t &_services, bool _ignore_phase);
     void insert_offer_service(std::vector<std::shared_ptr<message_impl> > &_messages,
                               const std::shared_ptr<const serviceinfo> &_info);
+    enum remote_offer_type_e : std::uint8_t {
+        RELIABLE_UNRELIABLE,
+        RELIABLE,
+        UNRELIABLE,
+        UNKNOWN = 0xff
+    };
 
     entry_data_t create_eventgroup_entry(
             service_t _service, instance_t _instance, eventgroup_t _eventgroup,
@@ -132,7 +137,7 @@ private:
             const std::shared_ptr<endpoint_definition> &_target,
             const std::set<client_t> &_clients);
 
-    using expired_ports_t = std::set<std::pair<bool, std::uint16_t>>;
+    typedef std::set<std::pair<bool, std::uint16_t>> expired_ports_t;
     struct sd_acceptance_state_t {
         explicit sd_acceptance_state_t(expired_ports_t& _expired_ports)
             : expired_ports_(_expired_ports),
@@ -172,7 +177,7 @@ private:
             const std::vector<std::shared_ptr<option_impl> > &_options,
             std::shared_ptr<remote_subscription_ack> &_acknowledgement,
             const boost::asio::ip::address &_sender,
-            bool _is_multicast,
+            const boost::asio::ip::address &_destination,
             bool _is_stop_subscribe_subscribe, bool _force_initial_events,
             const sd_acceptance_state_t& _sd_ac_state);
     void handle_eventgroup_subscription(service_t _service,
@@ -209,7 +214,7 @@ private:
             instance_t _instance,
             const std::shared_ptr<endpoint_definition>& its_endpoint);
 
-    void start_ttl_timer(int _shift = 0);
+    void start_ttl_timer();
     void stop_ttl_timer();
 
     void check_ttl(const boost::system::error_code &_error);
@@ -234,7 +239,7 @@ private:
             const std::shared_ptr<endpoint> &_unreliable,
             boost::asio::ip::address &_address) const;
 
-    void update_request(service_t _service, instance_t _instance);
+    std::shared_ptr<request> find_request(service_t _service, instance_t _instance);
 
     void start_offer_debounce_timer(bool _first_start);
     void on_offer_debounce_timer_expired(const boost::system::error_code &_error);
@@ -304,13 +309,13 @@ private:
     void on_last_msg_received_timer_expired(const boost::system::error_code &_error);
     void stop_last_msg_received_timer();
 
-    reliability_type_e get_remote_offer_type(
+    remote_offer_type_e get_remote_offer_type(
             service_t _service, instance_t _instance) const;
-    reliability_type_e get_remote_offer_type(
+    remote_offer_type_e get_remote_offer_type(
             const std::shared_ptr<subscription> &_subscription) const;
 
     bool update_remote_offer_type(service_t _service, instance_t _instance,
-                                  reliability_type_e _offer_type,
+                                  remote_offer_type_e _offer_type,
                                   const boost::asio::ip::address &_reliable_address,
                                   std::uint16_t _reliable_port,
                                   const boost::asio::ip::address &_unreliable_address,
@@ -356,7 +361,7 @@ private:
             const std::shared_ptr<subscription>& _subscription);
 
 private:
-    boost::asio::io_context &io_;
+    boost::asio::io_service &io_;
     service_discovery_host *host_;
     std::shared_ptr<configuration> configuration_;
 
@@ -457,7 +462,7 @@ private:
     std::chrono::milliseconds last_msg_received_timer_timeout_;
 
     mutable std::mutex remote_offer_types_mutex_;
-    std::map<std::pair<service_t, instance_t>, reliability_type_e> remote_offer_types_;
+    std::map<std::pair<service_t, instance_t>, remote_offer_type_e> remote_offer_types_;
     std::map<boost::asio::ip::address,
             std::map<std::pair<bool, std::uint16_t>,
                 std::set<std::pair<service_t, instance_t>>>> remote_offers_by_ip_;
@@ -473,3 +478,4 @@ private:
 }  // namespace vsomeip_v3
 
 #endif // VSOMEIP_V3_SD_SERVICE_DISCOVERY_IMPL_
+

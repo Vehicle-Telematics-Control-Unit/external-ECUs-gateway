@@ -1,9 +1,9 @@
-// Copyright (C) 2014-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2014-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#if defined(__linux__) || defined(ANDROID)
+#ifndef _WIN32
 
 #include <thread>
 
@@ -60,14 +60,15 @@ void netlink_connector::start() {
                 RTMGRP_IPV4_ROUTE | RTMGRP_IPV6_ROUTE |
                 RTMGRP_IPV4_MROUTE | RTMGRP_IPV6_MROUTE), ec);
 
-        if (ec && ec != boost::asio::error::address_in_use) {
+        if (ec) {
             VSOMEIP_WARNING << "Error binding NETLINK socket: " << ec.message();
             if (handler_) {
                 handler_(true, "n/a", true);
                 handler_(false, "n/a", true);
             }
-
+#ifndef VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS
             return;
+#endif // VSOMEIP_ENABLE_MULTIPLE_ROUTING_MANAGERS
         }
 
         send_ifa_request();
@@ -115,7 +116,7 @@ void netlink_connector::receive_cbk(boost::system::error_code const &_error,
                         auto its_if = net_if_flags_.find(static_cast<int>(ifa->ifa_index));
                         if (its_if != net_if_flags_.end()) {
                             if ((its_if->second & IFF_UP) &&
-                                    (is_requiring_link_ ? (its_if->second & IFF_RUNNING) : true)) {
+                                    (its_if->second & IFF_RUNNING)) {
                                 if (handler_) {
                                     if_indextoname(ifa->ifa_index,ifname);
                                     handler_(true, ifname, true);
@@ -141,7 +142,7 @@ void netlink_connector::receive_cbk(boost::system::error_code const &_error,
                     net_if_flags_[ifi->ifi_index] = ifi->ifi_flags;
                     if (net_if_index_for_address_ == ifi->ifi_index) {
                         if ((ifi->ifi_flags & IFF_UP) &&
-                            (is_requiring_link_ ? (ifi->ifi_flags & IFF_RUNNING) : true)) {
+                            (ifi->ifi_flags & IFF_RUNNING)) {
                             if (handler_) {
                                 if_indextoname(static_cast<unsigned int>(ifi->ifi_index),ifname);
                                 handler_(true, ifname, true);
@@ -241,10 +242,10 @@ void netlink_connector::send_cbk(boost::system::error_code const &_error, std::s
 }
 
 void netlink_connector::send_ifa_request() {
-    struct netlink_address_msg {
+    typedef struct {
         struct nlmsghdr nlhdr;
         struct ifaddrmsg addrmsg;
-    };
+    } netlink_address_msg;
     netlink_address_msg get_address_msg;
     memset(&get_address_msg, 0, sizeof(get_address_msg));
     get_address_msg.nlhdr.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifaddrmsg));
@@ -269,10 +270,10 @@ void netlink_connector::send_ifa_request() {
 }
 
 void netlink_connector::send_ifi_request() {
-    struct netlink_link_msg {
+    typedef struct {
         struct nlmsghdr nlhdr;
         struct ifinfomsg infomsg;
-    };
+    } netlink_link_msg;
     netlink_link_msg get_link_msg;
     memset(&get_link_msg, 0, sizeof(get_link_msg));
     get_link_msg.nlhdr.nlmsg_len = NLMSG_LENGTH(sizeof(struct ifinfomsg));
@@ -296,10 +297,10 @@ void netlink_connector::send_ifi_request() {
 }
 
 void netlink_connector::send_rt_request() {
-    struct netlink_route_msg {
+    typedef struct {
         struct nlmsghdr nlhdr;
         struct rtgenmsg routemsg;
-    };
+    } netlink_route_msg;
 
     netlink_route_msg get_route_msg;
     memset(&get_route_msg, 0, sizeof(get_route_msg));
@@ -440,4 +441,5 @@ bool netlink_connector::check_sd_multicast_route_match(struct rtmsg* _routemsg,
 
 } // namespace vsomeip_v3
 
-#endif // __linux__ or ANDROID
+#endif // #ifndef _WIN32
+

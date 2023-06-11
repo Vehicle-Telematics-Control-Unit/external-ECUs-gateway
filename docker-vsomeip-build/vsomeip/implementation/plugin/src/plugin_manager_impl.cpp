@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2021 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
+// Copyright (C) 2016-2017 Bayerische Motoren Werke Aktiengesellschaft (BMW AG)
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -6,7 +6,6 @@
 #include <sstream>
 #include <vector>
 #include <stdlib.h>
-#include <iomanip>
 #include <iostream>
 
 #ifdef _WIN32
@@ -111,8 +110,7 @@ void plugin_manager_impl::load_plugins() {
     }
 }
 
-std::shared_ptr<plugin> plugin_manager_impl::get_plugin(plugin_type_e _type,
-                                                                const std::string &_name) {
+std::shared_ptr<plugin> plugin_manager_impl::get_plugin(plugin_type_e _type, std::string _name) {
     std::lock_guard<std::recursive_mutex> its_lock_start_stop(plugins_mutex_);
     auto its_type = plugins_.find(_type);
     if (its_type != plugins_.end()) {
@@ -178,56 +176,42 @@ void * plugin_manager_impl::load_library(const std::string &_path) {
 #ifdef _WIN32
     return LoadLibrary(_path.c_str());
 #else
-    return dlopen(_path.c_str(), RTLD_LAZY | RTLD_LOCAL);
+    return dlopen(_path.c_str(), RTLD_LAZY | RTLD_GLOBAL);
 #endif
 }
 
-void * plugin_manager_impl::load_symbol(void * _handle, const std::string &_symbol_name) {
-    void* symbol = nullptr;
-    if (_handle) {
+void * plugin_manager_impl::load_symbol(void * _handle,
+        const std::string &_symbol) {
+    void * its_symbol = 0;
 #ifdef _WIN32
-        symbol = GetProcAddress(reinterpret_cast<HMODULE>(_handle), _symbol_name.c_str());
-#else
-        symbol = dlsym(_handle, _symbol_name.c_str());
-#endif
+    HINSTANCE hDLL = (HINSTANCE)_handle;
+    if (hDLL != NULL) {
 
-        if (!symbol) {
-            char* error_message = nullptr;
+        typedef UINT(CALLBACK* LPFNDLLFUNC1)(DWORD, UINT);
 
-#ifdef _WIN32
-            DWORD error_code = GetLastError();
-            FormatMessageA(
-                FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                nullptr,
-                error_code,
-                MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                reinterpret_cast<LPSTR>(&error_message),
-                0,
-                nullptr
-            );
-#else
-            error_message = dlerror();
-#endif
-
-            VSOMEIP_ERROR << "Cannot load symbol " << std::quoted(_symbol_name) << " because: " << error_message;
-
-#ifdef _WIN32
-            // Required to release memory allocated by FormatMessageA()
-            LocalFree(error_message);
-#endif
+        LPFNDLLFUNC1 lpfnDllFunc1 = (LPFNDLLFUNC1)GetProcAddress(hDLL, _symbol.c_str());
+        if (!lpfnDllFunc1) {
+            FreeLibrary(hDLL);
+            std::cerr << "Loading symbol \"" << _symbol << "\" failed (" << GetLastError() << ")" << std::endl;
+        }
+        else {
+            its_symbol = lpfnDllFunc1;
         }
     }
-    return symbol;
-}
-
-void plugin_manager_impl::unload_library(void * _handle) {
-    if (_handle) {
-#ifdef _WIN32
-        FreeLibrary(reinterpret_cast<HMODULE>(_handle));
 #else
-        dlclose(_handle);
-#endif
+    if (0 != _handle) {
+        dlerror(); // Clear previous error
+        its_symbol = dlsym(_handle, _symbol.c_str());
+        const char *dlsym_error = dlerror();
+        if (dlsym_error) {
+            VSOMEIP_INFO << "Cannot load symbol : " << _symbol << " : " << dlsym_error;
+            dlclose(_handle);
+        }
+    } else {
+        VSOMEIP_ERROR << "Loading failed: (" << dlerror() << ")";
     }
+#endif
+    return (its_symbol);
 }
 
 } // namespace vsomeip_v3

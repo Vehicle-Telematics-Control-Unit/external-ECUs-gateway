@@ -18,11 +18,8 @@ sudo make install
 
 2. Build hello_world target
 ___________________________
-cd <root directory of vSomeIP-Lib>/examples/hello_world$:
-
-mkdir build
-cd build
-cmake ..
+cmake --build . --target hello_world
+cd ./examples/hello_world/
 make
 
 Running Hello World Example
