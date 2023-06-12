@@ -10,10 +10,11 @@ void on_message(const std::shared_ptr<vsomeip::message> &_response)
     std::stringstream ss;
     for (vsomeip::length_t i = 0; i < l; i++)
     {
-        ss << *(its_payload->get_data() + i) << " ";
+        ss << *(its_payload->get_data() + i);
     }
+    ss << '\n';
 
-    std::cout << ss.str() << std::endl;
+    std::cout << "received a vsomeip response :" << _response << ss.str() << '\n';
 }
 
 int main()

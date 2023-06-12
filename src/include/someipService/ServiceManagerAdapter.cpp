@@ -94,7 +94,7 @@ void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &se
 void ServiceManagerAdapter::waitForServiceToBeAvailable(const uint16_t service_id, const uint16_t instance_id)
 {
     std::unique_lock<std::mutex> its_lock(m_mutex_);
-    while (!serviceAvailable[service_id + instance_id])
+    while (!serviceAvailable.at(service_id + instance_id))
         m_condition_.wait(its_lock);
 }
 

@@ -16,9 +16,25 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
         {"state", ""},
         {"description", ""},
     };
+    try{
     jsonMessage["state"] =
-        (stoi(data) == (uint8_t)DIAG_STATE::OKAY) ? "OKAY" : "FAULTY";
+        (std::stoi(data) == (uint8_t)DIAG_STATE::OKAY) ? "OKAY" : "FAULTY";
+    }
+    catch (const std::invalid_argument& ia) {
+        std::cerr << "Invalid argument: " << ia.what() << std::endl;
+        return;
+    }
 
+    catch (const std::out_of_range& oor) {
+        std::cerr << "Out of Range error: " << oor.what() << std::endl;
+        return;
+    }
+
+    catch (const std::exception& e)
+    {
+        std::cerr << "Undefined error: " << e.what() << std::endl;
+        return;
+    }
     switch (endpoint.port())
     {
     case (int)SRC_PORTS::SPEED_PORT:
@@ -47,6 +63,8 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
     default:
         break;
     }
+    
+    std::cout <<  jsonMessage.dump(4);
 
     if (msgType == MSG_TYPE::DIAGNOSTIC)
     {
