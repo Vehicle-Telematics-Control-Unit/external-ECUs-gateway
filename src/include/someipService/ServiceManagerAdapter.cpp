@@ -68,11 +68,6 @@ void ServiceManagerAdapter::offerEvents()
     }
 }
 
-// void ServiceManagerAdapter::addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback)
-// {
-//     methods.push_back({method, callback});
-// }
-
 void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &service_id, const uint16_t &instance_id, const std::vector<METHOD> &methods)
 {
     serviceAvailable[service_id + instance_id] = false;
@@ -83,8 +78,8 @@ void ServiceManagerAdapter::requestServicesANDRegisterMethods(const uint16_t &se
                                                         << "] is "
                                                         << (_is_available ? "available." : "NOT available.")
                                                         << std::endl;
-                                              serviceAvailable[_service + _instance] = true;
-                                              m_condition_.notify_one(); });
+                                              serviceAvailable[_service + _instance] = _is_available;
+                                                m_condition_.notify_one(); });
     m_app_->request_service(service_id, instance_id);
     for (auto method : methods)
         m_app_->register_message_handler(service_id, instance_id, method.method_id, method.callback);
@@ -118,12 +113,6 @@ void ServiceManagerAdapter::SendRequest(uint16_t service_id, uint16_t instance_i
     request->set_payload(its_payload);
     m_app_->send(request);
 }
-
-// void ServiceManagerAdapter::registerMethods()
-// {
-//     for (auto method : methods)
-//         m_app_->register_message_handler(m_service_id, m_instance_id, method.method_id, method.callback);
-// }
 
 void ServiceManagerAdapter::sendResponse(const std::vector<uint8_t> &payload, const std::shared_ptr<vsomeip::message> &_message)
 {

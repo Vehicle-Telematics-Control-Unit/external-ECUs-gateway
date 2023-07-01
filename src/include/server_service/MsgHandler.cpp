@@ -1,9 +1,8 @@
 #include "MsgHandler.hpp"
 #include <json.hpp>
 
-MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger, std::shared_ptr<std::vector<uint16_t>> events)
-    : serviceManager{servManger},
-      msgHandlerEvents{events}
+MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger)
+    : serviceManager{servManger}
 {
 }
 
@@ -11,26 +10,29 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
 {
     using json = nlohmann::json;
     json jsonMessage = {
-        {"route", "tests"},
+        {"route", "alerts/receive"},
         {"code", ""},
         {"state", ""},
         {"description", ""},
     };
-    try{
-    jsonMessage["state"] =
-        (std::stoi(data) == (uint8_t)DIAG_STATE::OKAY) ? "OKAY" : "FAULTY";
+    try
+    {
+        jsonMessage["state"] =
+            (std::stoi(data) == (uint8_t)DIAG_STATE::OKAY) ? "OKAY" : "FAULTY";
     }
-    catch (const std::invalid_argument& ia) {
+    catch (const std::invalid_argument &ia)
+    {
         std::cerr << "Invalid argument: " << ia.what() << std::endl;
         return;
     }
 
-    catch (const std::out_of_range& oor) {
+    catch (const std::out_of_range &oor)
+    {
         std::cerr << "Out of Range error: " << oor.what() << std::endl;
         return;
     }
 
-    catch (const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << "Undefined error: " << e.what() << std::endl;
         return;
@@ -38,11 +40,11 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
     switch (endpoint.port())
     {
     case (int)SRC_PORTS::SPEED_PORT:
-        currentEvent = msgHandlerEvents->front();
+        currentEvent = SPEED_EVENT_ID;
         msgType = MSG_TYPE::DSRC;
         break;
     case (int)SRC_PORTS::HEADING_PORT:
-        currentEvent = msgHandlerEvents->back();
+        currentEvent = HEADING_EVENT_ID;
         msgType = MSG_TYPE::DSRC;
         break;
     case (int)SRC_PORTS::TYRES_PORT:
@@ -63,17 +65,15 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
     default:
         break;
     }
-    
-    std::cout <<  jsonMessage.dump(4);
 
-    if (msgType == MSG_TYPE::DIAGNOSTIC)
+    if (msgType == MSG_TYPE::DIAGNOSTIC && serviceManager->serviceAvailable.at(REQUEST_SERVICE_ID + REQUEST_INSTANCE_ID))
     {
+        std::cout << jsonMessage.dump(4);
         std::string message = jsonMessage.dump(4);
-        serviceManager->waitForServiceToBeAvailable(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID);
         serviceManager->SendRequest(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, REQUEST_METHOD_ID, std::vector<uint8_t>(message.begin(), message.end()));
         std::cout << "request sent!!!\n";
     }
-    else
+    if (msgType == MSG_TYPE::DSRC)
     {
         std::cout << "updated event!!!\n";
         std::vector<uint8_t> dataToBeSent(data.begin(), data.end());

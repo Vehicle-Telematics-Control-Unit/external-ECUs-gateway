@@ -20,19 +20,20 @@ void on_message(const std::shared_ptr<vsomeip::message> &_response)
 int main()
 {
     std::shared_ptr<ServiceManagerAdapter> vsomeService_shared = std::make_shared<ServiceManagerAdapter>(SERVICE_ID, INSTANCE_ID, EVENTGROUP_ID, "UDP_Service");
-    std::shared_ptr<std::vector<uint16_t>> events = std::make_shared<std::vector<uint16_t>>();
-    events->push_back(SPEED_EVENT_ID);
-    events->push_back(HEADING_EVENT_ID);
     if (!vsomeService_shared->init())
     {
         std::cerr << "Couldn't initialize vsomeip services" << std::endl;
         return -1;
     }
+    vsomeService_shared->addEvent(SPEED_EVENT_ID);
+    vsomeService_shared->addEvent(HEADING_EVENT_ID);
     std::vector<ServiceManagerAdapter::METHOD> methods;
     methods.push_back({REQUEST_METHOD_ID, on_message});
     vsomeService_shared->requestServicesANDRegisterMethods(REQUEST_SERVICE_ID, REQUEST_INSTANCE_ID, methods);
     vsomeService_shared->offer();
-    Server server(PORT, vsomeService_shared, events);
+    vsomeService_shared->offerEvents();
+    std::cout << "starting server!!!\n";
+    Server server(PORT, vsomeService_shared);
     server.Start();
     return 0;
 }

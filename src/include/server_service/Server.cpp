@@ -1,10 +1,9 @@
 #include "Server.hpp"
 
-Server::Server(const uint16_t &port, std::shared_ptr<ServiceManagerAdapter> servManager, std::shared_ptr<std::vector<uint16_t>> events)
+Server::Server(const uint16_t &port, std::shared_ptr<ServiceManagerAdapter> servManager)
     : socket{io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port)},
-      serverEvents{events},
       serviceManager{servManager},
-      msgHandler{servManager, events}
+      msgHandler{servManager}
 {
 }
 
@@ -18,11 +17,7 @@ void Server::Start()
     StartRecieve();
     UDP_server_thread = std::move(std::thread([this]()
                                               { io_service.run(); }));
-    for (uint16_t event : *serverEvents)
-    {
-        serviceManager->addEvent(event);
-    }
-    serviceManager->offerEvents();
+    std::cout << "starting vsomeip\n";
     serviceManager->start();
 }
 
@@ -40,8 +35,6 @@ void Server::StartRecieve()
                                   {
                                       std::string newStr(data.data(), recvd);
                                       std::cout << "[" << sender_endpoint << "]: ";
-                                      //   for (int i = 0; i < recvd; i++)
-                                      //       std::cout << data[i];
                                       std::cout << newStr << '\n';
                                       msgHandler.HandleMsg(sender_endpoint, newStr);
                                   }

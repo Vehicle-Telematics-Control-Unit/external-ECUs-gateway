@@ -18,10 +18,9 @@ private:
     std::string data;
     MsgHandler msgHandler;
     std::shared_ptr<ServiceManagerAdapter> serviceManager;
-    std::shared_ptr<std::vector<uint16_t>> serverEvents;
 
 public:
-    Server(const uint16_t &port, std::shared_ptr<ServiceManagerAdapter> servManager, std::shared_ptr<std::vector<uint16_t>> events);
+    Server(const uint16_t &port, std::shared_ptr<ServiceManagerAdapter> servManager);
 
     ~Server();
 

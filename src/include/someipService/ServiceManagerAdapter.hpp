@@ -21,17 +21,12 @@ public:
         std::function<void(const std::shared_ptr<vsomeip::message> &)> callback;
     } METHOD;
 
-    // private:
-    //     void on_availability(vsomeip::service_t _service, vsomeip::instance_t _instance, bool _is_available);
-
 public:
     ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const std::string &name);
     ServiceManagerAdapter(const uint16_t &service_id, const uint16_t &instance_id, const uint16_t &event_group_id, const std::string &name);
     void start();
     bool init();
     void addEvent(const uint16_t &event);
-    // void addMethod(const uint16_t &method, const std::function<void(const std::shared_ptr<vsomeip::message> &)> callback);
-    // void registerMethods();
     void updateEvent(const uint16_t &event, const std::vector<uint8_t> &payload);
     void offer();
     void offerEvents();
@@ -55,9 +50,11 @@ private:
     uint16_t m_instance_id;
     uint16_t m_service_id;
     std::map<uint16_t, EVENT> m_events;
-    std::map<uint32_t, bool> serviceAvailable;
     std::vector<std::thread> threads;
     std::set<vsomeip::eventgroup_t> its_groups;
     std::vector<METHOD> methods;
+
+public:
+    std::map<uint32_t, bool> serviceAvailable;
 };
 #endif
