@@ -19,5 +19,5 @@ docker build -t vsomeip_build:v0 .
 
 ## how to run 
 ```
-sudo docker run -it --network host -v /tmp:/tmp:z udp_server_alpine
+docker run --name ECUs_gateway -it --network host -v /tmp:/tmp:z udp_server_alpine
 ```
