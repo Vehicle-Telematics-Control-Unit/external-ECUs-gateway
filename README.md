@@ -1,6 +1,18 @@
 # UDP-Server-Service
 
 
+
+## build with
+```bash
+$ docker buildx build --push \
+--platform linux/amd64,linux/arm64 \
+--tag registry.digitalocean.com/vehicle-plus/tcu_ecu-ethernet-gateway:v0 .
+```
+## how to run 
+```
+$ docker run --name ecus_ethernet_gateway -it --rm --privileged --net host -v /tmp:/tmp:z registry.digitalocean.com/vehicle-plus/tcu_ecu-ethernet-gateway:v0
+```
+
 ## build boost
 
 ```
@@ -16,8 +28,3 @@ docker build -t vsomeip_build:v0 .
 ```
 
 
-
-## how to run 
-```
-docker run --name ECUs_gateway -it --network host -v /tmp:/tmp:z udp_server_alpine
-```
