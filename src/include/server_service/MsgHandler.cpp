@@ -51,14 +51,16 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
     case (int)SRC_PORTS::HEADING_PORT:
         if (head_counter == 0)
         {
+            head_counter = 100;
             currentEvent = HEADING_EVENT_ID;
             msgType = MSG_TYPE::DSRC;
-            head_counter--;
             head_counter = HEAD_COUNTER;
             break;
         }
-        else
+        else{
+            head_counter--;
             return;
+        }
     case (int)SRC_PORTS::TYRES_PORT:
         jsonMessage["code"] = "C1234";
         jsonMessage["description"] = "Tyre pressure";
