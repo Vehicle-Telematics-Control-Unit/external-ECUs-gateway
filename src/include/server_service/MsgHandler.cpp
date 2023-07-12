@@ -76,7 +76,7 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
         jsonMessage["description"] = "Head lights";
         msgType = MSG_TYPE::DIAGNOSTIC;
         break;
-    default:
+    default:ERROR
         break;
     }
 
