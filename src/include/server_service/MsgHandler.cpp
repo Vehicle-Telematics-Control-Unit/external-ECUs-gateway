@@ -1,7 +1,7 @@
 #include "MsgHandler.hpp"
 #include <json.hpp>
 
-#define HEAD_COUNTER 100
+#define HEAD_COUNTER 20
 
 int head_counter = HEAD_COUNTER;
 
