@@ -1,5 +1,5 @@
 {
-    "cmake.sourceDirectory": "/home/abbas/grad_proj_repos/UDP_Server_Service/docker-vsomeip-build/vsomeip",
+    "cmake.sourceDirectory": "/home/ahmed/Documents/external-ECUs-gateway/docker-vsomeip-build/vsomeip",
     "files.associations": {
         "*.ipp": "cpp",
         "deque": "cpp",
