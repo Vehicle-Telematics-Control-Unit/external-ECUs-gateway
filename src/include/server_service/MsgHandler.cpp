@@ -1,10 +1,6 @@
 #include "MsgHandler.hpp"
 #include <json.hpp>
 
-#define HEAD_COUNTER 20
-
-int head_counter = HEAD_COUNTER;
-
 MsgHandler::MsgHandler(std::shared_ptr<ServiceManagerAdapter> servManger)
     : serviceManager{servManger}
 {
@@ -41,7 +37,6 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
         std::cerr << "Undefined error: " << e.what() << std::endl;
         return;
     }
-
     switch (endpoint.port())
     {
     case (int)SRC_PORTS::SPEED_PORT:
@@ -49,18 +44,9 @@ void MsgHandler::HandleMsg(const boost::asio::ip::udp::endpoint &endpoint, const
         msgType = MSG_TYPE::DSRC;
         break;
     case (int)SRC_PORTS::HEADING_PORT:
-        if (head_counter == 0)
-        {
-            head_counter = 100;
-            currentEvent = HEADING_EVENT_ID;
-            msgType = MSG_TYPE::DSRC;
-            head_counter = HEAD_COUNTER;
-            break;
-        }
-        else{
-            head_counter--;
-            return;
-        }
+        currentEvent = HEADING_EVENT_ID;
+        msgType = MSG_TYPE::DSRC;
+        break;
     case (int)SRC_PORTS::TYRES_PORT:
         jsonMessage["code"] = "C1234";
         jsonMessage["description"] = "Tyre pressure";
